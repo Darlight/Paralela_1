@@ -61,12 +61,14 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < ni; j++) {
 				printf("%f ", t[j]);
 			}
-			printf("\n");
+			printf("\n\n Vector solucion \n");
 			for (int j = 0; j < ni; j++) {
 				printf("%f ", next_t[j]);
 			}
 			printf("\n\n");
 		}
+
+		// Actualizar vectores
 		for (int j = 0; j < ni; j++) {
 				t[j] = next_t[j];
 				next_t[j] = 0.0;
