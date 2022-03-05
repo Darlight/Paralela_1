@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 	double t0 = 40;			// temperatura inicial de toda la barra
 	double tL = 40;			// temperatura en la frontera izquierda
 	double tR = 70;			// temperatura en la frontera derecha
-	double dt = 100000;			
+	double dt = 1000000;			
 	double dx = L/ni;			
 	double c = 0.000001;	// constante 10e-5
 
@@ -42,13 +42,14 @@ int main(int argc, char* argv[])
 	while (interv < ni && error >= 0.0001 )
 	{
 		// Calcular nueva temperatura
+		// Paralelizado con scheduling o con ompthreads clasico
 		for (int j = 0; j < ni; j++)
 		{
 			next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
 		}
 
 		// Calcular error
-
+		// Paralelizado con scheduling o con ompthreads clasico
 		for (int i = 0; i <= ni - 1; i++)
 		{
 			double de = abs(next_t[i] - t[i]);	//Absolute Error
@@ -56,7 +57,10 @@ int main(int argc, char* argv[])
 				error = de;			//Maximum error
 
 		}
-		if (interv == ni-1){
+
+		// PENSAR EN COMO DIVIDIR ARREGLOS PARA PARALELIZACION
+
+		if (interv == ni - 1){
 			printf("Iteracion %d \n", interv);
 			for (int j = 0; j < ni; j++) {
 				printf("%f ", t[j]);
