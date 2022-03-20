@@ -116,7 +116,6 @@ int main(int argc, char* argv[])
             }   
 			
 		}
-        printf("\nsfsf %lf\n", t[1]);
 	}
     
 	printf("\nIteracion %d\n\n Vector solucion \n", interv);
