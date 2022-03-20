@@ -24,9 +24,11 @@ int main(int argc, char* argv[])
 	double dt = 10000;			
 	double dx = L/ni;			
 	double c = 0.000001;	// constante 10e-5
+    int threads = 2;
 
-
-	printf("Ingrese el numero de itervalos: ");
+	printf("Ingrese la cantidad de threads: ");
+	scanf("%d", &threads);
+    printf("Ingrese el numero de itervalos: ");
 	scanf("%d", &ni);
 	printf("Ingrese la longitud: ");
 	scanf("%lf", &L);
@@ -57,42 +59,53 @@ int main(int argc, char* argv[])
 	error = 1000;
 	int interv = 0;
 	double tError;
+    int j;
 	// while no llegamos a criterio de salida
-	#pragma omp parallel shared(t, next_t, c, interv, tError, dt, dx)
+	#pragma omp parallel num_threads(threads) shared(t, interv, tError, dt, dx)
 	{
-		#pragma omp single
-		{
-			
-			while (interv < 100000 && error >= 0.0001 )
-			{
-				tError = 0;
-				// Calcular nueva temperatura
-                #pragma omp task
-                {
-                    for (int j = 0; j < ni; j++)
-                    {
-                        next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
-                        
-                        // Calcular error
-                        double newError = fabs(next_t[j] - t[j]);
-                        if (newError > tError){
-                            tError = newError;
-                        }
+        
+        while (interv < 100000 && error >= 0.0001 )
+        {
+            tError = 0;
+            // Calcular nueva temperatura
+            #pragma omp for schedule(static, 100000)
+            for (j = 0; j < ni; j++)
+            {     
+                next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
+                // Calcular error
+                double newError = fabs(next_t[j] - t[j]);
+                if (newError > tError){
+                    tError = newError;
+                }
+            }
+
+            #pragma omp single
+            {
+                
+                for (j = 0; j < ni; j++)
+                {     
+                    // Calcular error
+                    double newError = fabs(next_t[j] - t[j]);
+                    if (newError > tError){
+                        tError = newError;
                     }
                 }
-                #pragma omp taskwait
-				error = tError;
-                printf("adios");
+                error = tError;
 
-				// Actualizar vectores
-				for (int j = 0; j < ni; j++) {
-					t[j] = next_t[j];
-					next_t[j] = 0.0;
-				}
-				interv++;
-			}
+                // Actualizar vectores
+                for (j = 0; j < ni; j++) {
+                    t[j] = next_t[j];
+                    next_t[j] = 0.0;
+                }
+
+                interv++;
+
+            }   
+			
 		}
+        printf("\nsfsf %lf\n", t[1]);
 	}
+    
 	printf("\nIteracion %d\n\n Vector solucion \n", interv);
 	for (int j = 0; j < ni; j++) {
 		printf("%f ", t[j]);
