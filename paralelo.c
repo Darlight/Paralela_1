@@ -86,12 +86,10 @@ int main(int argc, char* argv[])
         {
             tError = 0;
             // Calcular nueva temperatura
-            #pragma omp for schedule(static, 100000)
+            #pragma omp for 
             for (j = 0; j < ni; j++)
             {     
                 next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
-                // Calcular error
-                double newError = fabs(next_t[j] - t[j]);
             }
 
             #pragma omp single
