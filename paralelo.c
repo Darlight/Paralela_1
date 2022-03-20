@@ -27,17 +27,35 @@ int main(int argc, char* argv[])
     int threads = 2;
 
 	printf("Ingrese la cantidad de threads: ");
-	scanf("%d", &threads);
-    printf("Ingrese el numero de itervalos: ");
-	scanf("%d", &ni);
+	if (!(scanf("%d", &threads))){
+        printf("\nEse valor no es valido\n");
+        exit(0);
+    };
+    printf("Ingrese el numero de intervalos: ");
+	if (!(scanf("%d", &ni))){
+        printf("\nEse valor no es valido\n");
+        exit(0);
+    };
 	printf("Ingrese la longitud: ");
-	scanf("%lf", &L);
-	printf("Ingrese a temperatura inicial de la barra: ");
-	scanf("%lf", &t0);
+	if (!(scanf("%lf", &L))){
+        printf("\nEse valor no es valido\n");
+        exit(0);
+    };
+	printf("Ingrese la temperatura inicial de la barra: ");
+	if (!(scanf("%lf", &t0))){
+        printf("\nEse valor no es valido\n");
+        exit(0);
+    };
 	printf("Ingrese la temperatura de la frontera izquierda: ");
-	scanf("%lf", &tL);
+	if (!(scanf("%lf", &tL))){
+        printf("\nEse valor no es valido\n");
+        exit(0);
+    };
 	printf("Ingrese la temperatura de la frontera derecha: ");
-	scanf("%lf", &tR);
+	if (!(scanf("%lf", &tR))){
+        printf("\nEse valor no es valido\n");
+        exit(0);
+    };
 
 	printf("Calculando con %d intervalos discretos\n", ni);
 
@@ -74,9 +92,6 @@ int main(int argc, char* argv[])
                 next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
                 // Calcular error
                 double newError = fabs(next_t[j] - t[j]);
-                if (newError > tError){
-                    tError = newError;
-                }
             }
 
             #pragma omp single
