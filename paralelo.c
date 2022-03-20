@@ -11,6 +11,8 @@
 
 int main(int argc, char* argv[])
 {
+	double start; 
+	double end; 
 
 	// Input
 	double error = 0;			// precision o diferencia requerida
@@ -19,9 +21,10 @@ int main(int argc, char* argv[])
 	double t0 = 40;			// temperatura inicial de toda la barra
 	double tL = 40;			// temperatura en la frontera izquierda
 	double tR = 100;			// temperatura en la frontera derecha
-	double dt = 1000000;			
+	double dt = 10000;			
 	double dx = L/ni;			
 	double c = 0.000001;	// constante 10e-5
+
 
 	printf("Ingrese el numero de itervalos: ");
 	scanf("%d", &ni);
@@ -35,6 +38,8 @@ int main(int argc, char* argv[])
 	scanf("%lf", &tR);
 
 	printf("Calculando con %d intervalos discretos\n", ni);
+
+	start = omp_get_wtime(); 
 
 	// Vectores
 	double t[ni];
@@ -53,28 +58,40 @@ int main(int argc, char* argv[])
 	int interv = 0;
 	double tError;
 	// while no llegamos a criterio de salida
-	while (interv < 1000 && error >= 0.001 )
+	#pragma omp parallel shared(t, next_t, c, interv, tError, dt, dx)
 	{
-		tError = 0;
-		// Calcular nueva temperatura
-		for (int j = 0; j < ni; j++)
+		#pragma omp single
 		{
-			next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
 			
-			// Calcular error
-			double newError = fabs(next_t[j] - t[j]);
-			if (newError > tError){
-				tError = newError;
+			while (interv < 100000 && error >= 0.0001 )
+			{
+				tError = 0;
+				// Calcular nueva temperatura
+                #pragma omp task
+                {
+                    for (int j = 0; j < ni; j++)
+                    {
+                        next_t[j] = t[j] + ((c*dt)/pow(dx, 2)) * (t[j-1] - 2*t[j] + t[j+1]);
+                        
+                        // Calcular error
+                        double newError = fabs(next_t[j] - t[j]);
+                        if (newError > tError){
+                            tError = newError;
+                        }
+                    }
+                }
+                #pragma omp taskwait
+				error = tError;
+                printf("adios");
+
+				// Actualizar vectores
+				for (int j = 0; j < ni; j++) {
+					t[j] = next_t[j];
+					next_t[j] = 0.0;
+				}
+				interv++;
 			}
 		}
-		error = tError;
-
-		// Actualizar vectores
-		for (int j = 0; j < ni; j++) {
-				t[j] = next_t[j];
-				next_t[j] = 0.0;
-			}
-		interv++;
 	}
 	printf("\nIteracion %d\n\n Vector solucion \n", interv);
 	for (int j = 0; j < ni; j++) {
@@ -82,5 +99,6 @@ int main(int argc, char* argv[])
 	}
 	printf("\n\nError = %lf\n", error);
 
-	
+	end = omp_get_wtime(); 
+  	printf("Tiempo =  %f s\n", end - start);
 }
